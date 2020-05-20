@@ -27,6 +27,8 @@ import (
 
 var cfgFile string
 
+var err error = nil
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "pdk",
@@ -39,12 +41,17 @@ var rootCmd = &cobra.Command{
 		isVersion, err := cmd.Flags().GetBool("version")
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 		if isVersion {
 			fmt.Println("v" + pkg.StringVersion)
+			fmt.Println(err)
 			return
 		}
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			fmt.Println(err)
+			return
+		}
 		return
 	},
 }

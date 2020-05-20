@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2020 Tim_Paik <timpaik@163.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,14 +24,10 @@ import (
 
 // installCmd represents the install command
 var installCmd = &cobra.Command{
-	Use:   "install",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:     "install <package(s)>",
+	Short:   "Install packages",
+	Long:    `Download and install the latest package from your local repository (default)`,
+	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("install called")
 	},
