@@ -36,16 +36,22 @@ var updateCmd = &cobra.Command{
 		)
 		if repoName, err = cmd.Flags().GetString("name"); err != nil {
 			fmt.Println(err)
+			return
 		}
 
 		if len(args) == 0 {
-			url = ""
-			repoName = ""
-		} else if len(args) > 1 {
+			if err := pkg.UpdateLocal(pkg.DefaultRepo); err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else if len(args) == 1 {
+			if err = pkg.Update(url, repoName); err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else {
 			fmt.Println("Error: Too many targets specified")
-		}
-		if err = pkg.Update(url, repoName); err != nil {
-			fmt.Println(err)
+			return
 		}
 	},
 }
@@ -58,7 +64,7 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
-	updateCmd.PersistentFlags().String("name", "repo.json", "Update the repo'name")
+	updateCmd.PersistentFlags().String("name", pkg.DefaultRepo, "Update the repo'name")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

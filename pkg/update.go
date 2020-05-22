@@ -24,6 +24,18 @@ func Read(path string) (repo Repositories, err error) {
 	return repo, err
 }
 
+func UpdateLocal(repoName string) (err error) {
+	var repo Repositories
+	if repo, err = Read(RepoRoot + "/" + repoName + ".json"); err != nil {
+		fmt.Println(repoName + ".json was not found!")
+		return err
+	}
+	if err := Update(repo.URL, repo.Name); err != nil {
+		return err
+	}
+	return nil
+}
+
 func Update(url, repoName string) (err error) {
 	var (
 		repoJson []byte
@@ -32,19 +44,8 @@ func Update(url, repoName string) (err error) {
 		resp     *http.Response
 	)
 
-	if url == "" && repoName == "" {
-		var repo Repositories
-		if repo, err = Read(RepoRoot + "/" + DefaultRepo); err != nil {
-			fmt.Println("Repo.json was not found!")
-			return err
-		}
-
-		url = repo.URL
-		repoName = repo.Name
-	}
-
 	if resp, err = http.Get(url); err != nil {
-		fmt.Println("Error: Parameter must be full URL")
+		fmt.Println("Error: URL parsing error")
 		return err
 	}
 
@@ -65,7 +66,7 @@ func Update(url, repoName string) (err error) {
 		return err
 	}
 
-	if err = ioutil.WriteFile(RepoRoot+"/"+repo.Name+".json", repoJson, 0644); err != nil {
+	if err = ioutil.WriteFile(RepoRoot+"/"+repoName+".json", repoJson, 0644); err != nil {
 		return err
 	}
 

@@ -21,7 +21,7 @@ type Repositories struct {
 
 var (
 	Root              = root()
-	RepoRoot          = Root
+	RepoRoot          = repoRoot()
 	DefaultRepo       = "repo.json"
 	err         error = nil
 )
@@ -35,4 +35,11 @@ func root() (root string) {
 	}
 	root = filepath.Dir(root)
 	return root
+}
+
+func repoRoot() (repoRoot string) {
+	if err := os.MkdirAll(Root+"/repo", 0644); err != nil {
+		panic(err)
+	}
+	return Root + "/repo"
 }
