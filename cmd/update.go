@@ -31,7 +31,7 @@ var updateCmd = &cobra.Command{
 	Aliases: []string{"u"},
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
-			url      string
+			//url      string
 			repoName string
 		)
 		if repoName, err = cmd.Flags().GetString("name"); err != nil {
@@ -40,12 +40,12 @@ var updateCmd = &cobra.Command{
 		}
 
 		if len(args) == 0 {
-			if err := pkg.UpdateLocal(pkg.DefaultRepo); err != nil {
+			if err := pkg.UpdateLocal(repoName); err != nil {
 				fmt.Println(err)
 				return
 			}
 		} else if len(args) == 1 {
-			if err = pkg.Update(url, repoName); err != nil {
+			if err = pkg.Update(args[0], repoName); err != nil {
 				fmt.Println(err)
 				return
 			}

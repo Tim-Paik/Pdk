@@ -30,7 +30,7 @@ func UpdateLocal(repoName string) (err error) {
 		fmt.Println(repoName + ".json was not found!")
 		return err
 	}
-	if err := Update(repo.URL, repo.Name); err != nil {
+	if err := Update(repo.URL, repoName); err != nil {
 		return err
 	}
 	return nil
@@ -45,7 +45,7 @@ func Update(url, repoName string) (err error) {
 	)
 
 	if resp, err = http.Get(url); err != nil {
-		fmt.Println("Error: URL parsing error")
+		fmt.Println("Error: Sending request error")
 		return err
 	}
 

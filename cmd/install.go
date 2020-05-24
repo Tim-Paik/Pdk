@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
-	"fmt"
+	"pdk/pkg"
 
 	"github.com/spf13/cobra"
 )
@@ -29,7 +29,7 @@ var installCmd = &cobra.Command{
 	Long:    `Download and install the latest package from your local repository (default)`,
 	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("install called")
+		pkg.Install(args, pkg.DefaultRepo)
 	},
 }
 

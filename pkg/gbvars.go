@@ -22,7 +22,9 @@ type Repositories struct {
 var (
 	Root              = root()
 	RepoRoot          = repoRoot()
-	DefaultRepo       = "repo.json"
+	PackageRoot       = packageRoot()
+	AppRoot           = appRoot()
+	DefaultRepo       = "repo"
 	err         error = nil
 )
 
@@ -42,4 +44,18 @@ func repoRoot() (repoRoot string) {
 		panic(err)
 	}
 	return Root + "/repo"
+}
+
+func packageRoot() (repoRoot string) {
+	if err := os.MkdirAll(Root+"/packages", 0644); err != nil {
+		panic(err)
+	}
+	return Root + "/packages"
+}
+
+func appRoot() (repoRoot string) {
+	if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
+		panic(err)
+	}
+	return Root + "/apps"
 }
