@@ -29,7 +29,9 @@ var versionCmd = &cobra.Command{
 	Long:    `Print the version number of pdk and exit.`,
 	Aliases: []string{"v"},
 	Run: func(cmd *cobra.Command, args []string) {
-		pkg.PrintVrsion()
+		if err := pkg.PrintVersion(); err != nil {
+			return
+		}
 	},
 }
 

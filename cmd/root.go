@@ -44,8 +44,10 @@ var rootCmd = &cobra.Command{
 			return
 		}
 		if isVersion {
-			fmt.Println("v" + pkg.StringVersion)
-			fmt.Println(err)
+			if _, err := fmt.Println("v" + pkg.StringVersion); err != nil {
+				fmt.Println(err)
+				return
+			}
 			return
 		}
 		if err := cmd.Help(); err != nil {

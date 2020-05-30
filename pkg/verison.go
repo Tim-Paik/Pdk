@@ -16,6 +16,9 @@ func strVersion(ver string) (strVer string) {
 	return strVer
 }
 
-func PrintVrsion() {
-	fmt.Printf(" _____    _ _                                                  \n|  __ \\  | | |     Pdk v%s                              \n| |__) |_| | | __  Copyright © 2020 Tim_Paik <timpaik@163.com> \n|  ___/ _| | |/ /                                              \n| |  | (_| |   <   Redistributed under the terms of GNU GPL.   \n|_|   \\__,_|_|\\_\\                                              \n", StringVersion)
+func PrintVersion() (err error) {
+	if _, err := fmt.Printf(" _____    _ _                                                    \n|  __ \\  | | |     Pdk v%s                                \n| |__) |_| | | __  Copyright (C) 2020 Tim_Paik <timpaik@163.com> \n|  ___/ _| | |/ /                                                \n| |  | (_| |   <   Redistributed under the terms of GNU GPL.     \n|_|   \\__,_|_|\\_\\                                                \n", StringVersion); err != nil {
+		return err
+	}
+	return nil
 }

@@ -1,7 +1,10 @@
 package pkg
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"hash"
 	"io"
 	"net/http"
 	"os"
@@ -20,6 +23,10 @@ func Install(packages []string, repoName string) {
 		return
 	}
 	fmt.Println(index)
+	if _, err := Download("", "", "nil"); err != nil {
+		fmt.Println("Error: Download error!")
+		return
+	}
 	return
 }
 
@@ -35,10 +42,11 @@ func Search(repo *Repositories, packages []string) (index []int, err error) {
 	return index, nil
 }
 
-func Download(URL, PATH string) (written int64, err error) {
+func Download(URL string, PATH string, MD5string string) (written int64, err error) {
 	var (
-		resp *http.Response
-		data *os.File
+		resp     *http.Response
+		data     *os.File
+		checkMD5 hash.Hash
 	)
 
 	if resp, err = http.Get(URL); err != nil {
@@ -54,12 +62,27 @@ func Download(URL, PATH string) (written int64, err error) {
 		return -3, err
 	}
 
+	checkMD5 = md5.New()
+	if file, err := os.Open(PATH); err != nil {
+		return 0, err
+	} else {
+		if _, err := io.Copy(checkMD5, file); err != nil {
+			return 0, err
+		}
+	}
+
+	if MD5string != "nil" && MD5string != hex.EncodeToString(checkMD5.Sum(nil)) {
+		fmt.Println("Error: MD5 error")
+	} else {
+		fmt.Println("MD5 OK!")
+	}
+
 	if err := resp.Body.Close(); err != nil {
-		return -4, err
+		return -5, err
 	}
 
 	if err := data.Close(); err != nil {
-		return -5, err
+		return -6, err
 	}
 
 	return written, nil
