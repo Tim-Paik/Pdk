@@ -18,54 +18,43 @@ package cmd
 
 import (
 	"fmt"
-	"pdk/pkg"
-
 	"github.com/spf13/cobra"
+	"pdk/pkg"
 )
 
-// updateCmd represents the update command
-var updateCmd = &cobra.Command{
-	Use:     "update <URL>",
-	Short:   "Update the repo",
-	Long:    `Download and update the repo from the URL.`,
-	Aliases: []string{"u"},
+// md5sumCmd represents the md5sum command
+var md5sumCmd = &cobra.Command{
+	Use:   "md5sum <filePath>",
+	Short: "Print MD5 (128-bit) checksums.",
+	Long:  `Print MD5 (128-bit) checksums.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			repoName string
-		)
-		if repoName, err = cmd.Flags().GetString("name"); err != nil {
-			fmt.Println(err)
-			return
-		}
-
 		if len(args) == 0 {
-			if err := pkg.UpdateLocal(repoName); err != nil {
-				fmt.Println(err)
-				return
-			}
-		} else if len(args) == 1 {
-			if err = pkg.Update(args[0], repoName); err != nil {
-				fmt.Println(err)
-				return
-			}
+			cmd.HelpFunc()
+			return
 		} else {
-			fmt.Println("Error: Too many targets specified")
+			for i := 0; i < len(args); i++ {
+				if md5, err := pkg.Md5Sum(args[i]); err != nil {
+					fmt.Println(err)
+					return
+				} else {
+					fmt.Println(md5 + " " + args[i])
+				}
+			}
 			return
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(md5sumCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
-	updateCmd.PersistentFlags().String("name", pkg.DefaultRepo, "Update the repo'name")
+	// md5sumCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// updateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// md5sumCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

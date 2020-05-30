@@ -10,13 +10,16 @@ type Repositories struct {
 	Version int64  `json:"version"`
 	Update  int64  `json:"update"`
 	URL     string `json:"URL"`
-	Pkgs    []struct {
-		Name        string `json:"name"`
-		Version     string `json:"version"`
-		Description string `json:"description"`
-		Update      int64  `json:"update"`
-		URL         string `json:"URL"`
-	} `json:"pkgs"`
+	Pkgs    []Pkgs `json:"pkgs"`
+}
+
+type Pkgs struct {
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	Description string `json:"description"`
+	Update      int64  `json:"update"`
+	Md5         string `json:"md5"`
+	URL         string `json:"URL"`
 }
 
 var (

@@ -2,13 +2,12 @@ package pkg
 
 import (
 	"fmt"
-	"strconv"
 )
 
 var (
 	Version       = "000001"
 	StringVersion = strVersion(Version)
-	NumVersion, _ = strconv.Atoi(Version)
+	//NumVersion, _ = strconv.Atoi(Version)
 )
 
 func strVersion(ver string) (strVer string) {
