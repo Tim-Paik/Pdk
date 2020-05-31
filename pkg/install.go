@@ -1,12 +1,14 @@
 package pkg
 
 import (
+	"archive/zip"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func Install(packages []string, repoName string) {
@@ -23,22 +25,26 @@ func Install(packages []string, repoName string) {
 	for _, i := range index {
 		PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version
 		if !Exists(PATH) {
+			fmt.Println("Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
 				fmt.Println(err)
 				return
 			}
+		} else {
+			fmt.Println("Find the local package: " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		}
 		if MD5, err := Md5Sum(PATH); err != nil {
 			fmt.Println(err)
 			return
 		} else if MD5 != repo.Pkgs[i].Md5 {
 			fmt.Println("Error: Md5 error")
-			fmt.Println(MD5)
-			fmt.Println(repo.Pkgs[i].Md5)
+			fmt.Println("Want: " + repo.Pkgs[i].Md5)
+			fmt.Println("Get: " + MD5)
 			if err := os.RemoveAll(PATH); err != nil {
 				fmt.Println(err)
 				return
 			}
+			fmt.Println("Re-downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
 				fmt.Println(err)
 				return
@@ -50,6 +56,11 @@ func Install(packages []string, repoName string) {
 				fmt.Println("Error: Serious md5 error")
 				return
 			}
+		}
+		fmt.Println("Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+		if err := Unzip(PATH, AppRoot); err != nil {
+			fmt.Println(err)
+			return
 		}
 	}
 	return
@@ -125,4 +136,49 @@ func Exists(path string) bool {
 		return false
 	}
 	return true
+}
+
+func Unzip(archive, target string) error {
+	var reader *zip.ReadCloser
+	var fileReader io.ReadCloser
+	if reader, err = zip.OpenReader(archive); err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(target, 0755); err != nil {
+		return err
+	}
+
+	for _, file := range reader.File {
+		path := filepath.Join(target, file.Name)
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(path, file.Mode()); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if fileReader, err = file.Open(); err != nil {
+			return err
+		}
+
+		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+
+		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			return err
+		}
+
+		if err := targetFile.Close(); err != nil {
+			return err
+		}
+
+		if err := fileReader.Close(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -30,10 +30,9 @@ var updateCmd = &cobra.Command{
 	Long:    `Download and update the repo from the URL.`,
 	Aliases: []string{"u"},
 	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			repoName string
-		)
-		if repoName, err = cmd.Flags().GetString("name"); err != nil {
+		var repoName string
+
+		if repoName, err = cmd.Flags().GetString("repoName"); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -63,7 +62,7 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
-	updateCmd.PersistentFlags().String("name", pkg.DefaultRepo, "Update the repo'name")
+	updateCmd.PersistentFlags().String("repoName", pkg.DefaultRepo, "Update the specified repo (repo by default)")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

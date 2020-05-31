@@ -17,6 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"fmt"
 	"pdk/pkg"
 
 	"github.com/spf13/cobra"
@@ -30,6 +31,7 @@ var versionCmd = &cobra.Command{
 	Aliases: []string{"v"},
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := pkg.PrintVersion(); err != nil {
+			fmt.Println(err)
 			return
 		}
 	},

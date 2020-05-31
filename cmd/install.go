@@ -17,6 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"fmt"
 	"pdk/pkg"
 
 	"github.com/spf13/cobra"
@@ -29,7 +30,12 @@ var installCmd = &cobra.Command{
 	Long:    `Download and install the latest package from your local repository (default)`,
 	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {
-		pkg.Install(args, pkg.DefaultRepo)
+		var repoName string
+		if repoName, err = cmd.Flags().GetString("repoName"); err != nil {
+			fmt.Println(err)
+			return
+		}
+		pkg.Install(args, repoName)
 	},
 }
 
@@ -41,6 +47,7 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
+	installCmd.PersistentFlags().String("repoName", pkg.DefaultRepo, "Install from specified repo (repo by default)")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
