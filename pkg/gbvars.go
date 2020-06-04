@@ -3,6 +3,7 @@ package pkg
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type Repositories struct {
@@ -27,6 +28,7 @@ var (
 	RepoRoot          = repoRoot()
 	PackageRoot       = packageRoot()
 	AppRoot           = appRoot()
+	AppPath           = appPath()
 	DefaultRepo       = "repo"
 	err         error = nil
 )
@@ -57,8 +59,27 @@ func packageRoot() (repoRoot string) {
 }
 
 func appRoot() (repoRoot string) {
-	if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
-		panic(err)
+	switch runtime.GOOS {
+	case "windows":
+		if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
+			panic(err)
+		}
+		repoRoot = Root + "/apps"
+	default:
+		repoRoot = "/"
 	}
-	return Root + "/apps"
+	return repoRoot
+}
+
+func appPath() (appPath string) {
+	switch runtime.GOOS {
+	case "windows":
+		if err := os.MkdirAll(AppRoot+"/appPath", 0755); err != nil {
+			panic(err)
+		}
+		appPath = AppRoot + "/appPath"
+	default:
+		appPath = "/usr/bin"
+	}
+	return appPath
 }
