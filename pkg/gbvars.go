@@ -74,10 +74,10 @@ func appRoot() (repoRoot string) {
 func appPath() (appPath string) {
 	switch runtime.GOOS {
 	case "windows":
-		if err := os.MkdirAll(AppRoot+"/appPath", 0755); err != nil {
+		if err := os.MkdirAll(AppRoot+"/bin", 0755); err != nil {
 			panic(err)
 		}
-		appPath = AppRoot + "/appPath"
+		appPath = AppRoot + "/bin"
 	default:
 		appPath = "/usr/bin"
 	}
