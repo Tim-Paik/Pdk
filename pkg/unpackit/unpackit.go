@@ -263,7 +263,7 @@ func unzipFile(f *zip.File, destPath string) error {
 		}
 	}
 
-	if err := os.Chtimes(file.Name(), time.Now(), f.ModTime()); err != nil {
+	if err := os.Chtimes(file.Name(), time.Now(), f.Modified); err != nil {
 		log.Printf("warn: failed setting file atime and mtime for %q: %#v", file.Name(), err)
 	}
 
