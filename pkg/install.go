@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"pdk/pkg/unpackit"
 )
 
 func Install(packages []string, repoName string) {
@@ -58,7 +59,7 @@ func Install(packages []string, repoName string) {
 			}
 		}
 		fmt.Println("Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
-		if err := Unzip(PATH, AppRoot); err != nil {
+		if err := Unpack(PATH, AppRoot); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -180,5 +181,16 @@ func Unzip(archive, target string) error {
 		}
 	}
 
+	return nil
+}
+
+func Unpack(archive, target string) (err error) {
+	var file *os.File
+	if file, err = os.Open(archive); err != nil {
+		return err
+	}
+	if _, err := unpackit.Unpack(file, target); err != nil {
+		return err
+	}
 	return nil
 }
