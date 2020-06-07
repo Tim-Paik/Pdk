@@ -76,10 +76,10 @@ func Install(packages []string, repoName string) {
 			cmd := exec.Command(AppRoot + "/" + repo.Pkgs[i].Name + "/install")
 			cmd.Stdout = &outInfo
 			if err := cmd.Run(); err != nil {
-				fmt.Println(err)
-				return
+				break
+			} else {
+				fmt.Println(outInfo.String())
 			}
-			fmt.Println(outInfo.String())
 		}
 	}
 	return
