@@ -10,11 +10,13 @@ type Repositories struct {
 	Name    string `json:"name"`
 	Version int64  `json:"version"`
 	Update  int64  `json:"update"`
+	OS      string `json:"os"`
+	Arch    string `json:"arch"`
 	URL     string `json:"URL"`
-	Pkgs    []Pkgs `json:"pkgs"`
+	Pkgs    []Pkg  `json:"pkgs"`
 }
 
-type Pkgs struct {
+type Pkg struct {
 	Name        string `json:"name"`
 	Version     string `json:"version"`
 	Description string `json:"description"`

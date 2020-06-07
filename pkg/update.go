@@ -60,6 +60,10 @@ func Update(url, repoName string) (err error) {
 		return err
 	}
 
+	if err := CheckArch(&repo); err != nil {
+		fmt.Println(err)
+	}
+
 	repo.Update = time.Now().Unix()
 
 	if repoJson, err = json.Marshal(repo); err != nil {

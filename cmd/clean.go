@@ -18,43 +18,37 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
+	"os"
 	"pdk/pkg"
+
+	"github.com/spf13/cobra"
 )
 
-// md5sumCmd represents the md5sum command
-var md5sumCmd = &cobra.Command{
-	Use:   "md5sum <filePath>",
-	Short: "Print MD5 (128-bit) checksums of the file",
-	Long:  `Print MD5 (128-bit) checksums of the file`,
+// cleanCmd represents the clean command
+var cleanCmd = &cobra.Command{
+	Use:     "clean",
+	Short:   "Clear all local cache packages",
+	Long:    `Clear all local cache packages`,
+	Aliases: []string{"c"},
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.HelpFunc()
-			return
-		} else {
-			for i := 0; i < len(args); i++ {
-				if md5, err := pkg.Md5Sum(args[i]); err != nil {
-					fmt.Println(err)
-					return
-				} else {
-					fmt.Println(md5 + " " + args[i])
-				}
-			}
+		if err := os.RemoveAll(pkg.PackageRoot); err != nil {
+			fmt.Println(err)
 			return
 		}
+		return
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(md5sumCmd)
+	rootCmd.AddCommand(cleanCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// md5sumCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// cleanCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// md5sumCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// cleanCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

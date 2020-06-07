@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"pdk/pkg/unpackit"
+	"runtime"
 )
 
 func Install(packages []string, repoName string) {
@@ -18,6 +19,9 @@ func Install(packages []string, repoName string) {
 	if repo, err = Read(RepoRoot + "/" + repoName + ".json"); err != nil {
 		fmt.Println(err)
 		return
+	}
+	if err := CheckArch(&repo); err != nil {
+		fmt.Println(err)
 	}
 	if index, err = Search(&repo, packages); err != nil {
 		fmt.Println(err)
@@ -190,6 +194,17 @@ func Unpack(archive, target string) (err error) {
 		return err
 	}
 	if _, err := unpackit.Unpack(file, target); err != nil {
+		return err
+	}
+	return nil
+}
+
+func CheckArch(repo *Repositories) (err error) {
+	if repo.Arch == runtime.GOARCH && repo.OS == runtime.GOOS {
+		return nil
+	}
+	if _, err := fmt.Printf("Warn: You are using %s instead of %s in %s", repo.OS+"/"+repo.Arch, runtime.GOOS+"/"+
+		runtime.GOARCH, repo.Name); err != nil {
 		return err
 	}
 	return nil
