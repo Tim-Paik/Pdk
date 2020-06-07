@@ -2,12 +2,14 @@ package pkg
 
 import (
 	"archive/zip"
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"pdk/pkg/unpackit"
 	"runtime"
@@ -66,6 +68,18 @@ func Install(packages []string, repoName string) {
 		if err := Unpack(PATH, AppRoot); err != nil {
 			fmt.Println(err)
 			return
+		}
+		//CALLBACK_SCRIPT
+		switch runtime.GOOS {
+		case "windows":
+			var outInfo bytes.Buffer
+			cmd := exec.Command(AppRoot + "/" + repo.Pkgs[i].Name + "/install")
+			cmd.Stdout = &outInfo
+			if err := cmd.Run(); err != nil {
+				fmt.Println(err)
+				return
+			}
+			fmt.Println(outInfo.String())
 		}
 	}
 	return
