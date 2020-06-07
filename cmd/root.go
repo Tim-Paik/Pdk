@@ -78,7 +78,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("version", "v", false, "Print version information and quit")
+	rootCmd.Flags().BoolP("version", "V", false, "Print version information and quit")
 }
 
 // initConfig reads in config file and ENV variables if set.
