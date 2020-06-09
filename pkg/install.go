@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"archive/zip"
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
@@ -10,64 +9,57 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"pdk/pkg/unpackit"
 	"runtime"
 )
 
-func Install(packages []string, repoName string) {
+func Install(packages []string, repoName string) (err error) {
 	var repo Repositories
 	var index []int
+	if len(packages) == 0 {
+		return fmt.Errorf("Error: no targets specified\n")
+	}
 	if repo, err = Read(RepoRoot + "/" + repoName + ".json"); err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	if err := CheckArch(&repo); err != nil {
-		fmt.Println(err)
+		return err
 	}
 	if index, err = Search(&repo, packages); err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	for _, i := range index {
 		PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version
 		if !Exists(PATH) {
 			fmt.Println("Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 		} else {
 			fmt.Println("Find the local package: " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		}
 		if MD5, err := Md5Sum(PATH); err != nil {
-			fmt.Println(err)
-			return
+			return err
 		} else if MD5 != repo.Pkgs[i].Md5 {
 			fmt.Println("Error: Md5 error")
 			fmt.Println("Want: " + repo.Pkgs[i].Md5)
 			fmt.Println("Get: " + MD5)
 			if err := os.RemoveAll(PATH); err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 			fmt.Println("Re-downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 			if MD5, err := Md5Sum(PATH); err != nil {
-				fmt.Println(err)
-				return
+				return err
 			} else if MD5 != repo.Pkgs[i].Md5 {
-				fmt.Println("Error: Serious md5 error")
-				return
+				return fmt.Errorf("Error: Serious md5 error\n")
 			}
 		}
 		fmt.Println("Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		if err := Unpack(PATH, AppRoot); err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 		//CALLBACK_SCRIPT
 		switch runtime.GOOS {
@@ -82,7 +74,7 @@ func Install(packages []string, repoName string) {
 			}
 		}
 	}
-	return
+	return nil
 }
 
 func Search(repo *Repositories, packages []string) (index []int, err error) {
@@ -105,29 +97,34 @@ func Download(URL, PATH string) (written int64, err error) {
 	var (
 		resp *http.Response
 		data *os.File
+		//dataSize int64
 	)
 
 	if resp, err = http.Get(URL); err != nil {
-		fmt.Println("Error: Sending request error")
-		return -1, err
+		return 0, fmt.Errorf("Error: Sending request error\n")
 	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			return
+		}
+	}()
+
+	//if dataSize, err = strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64); err != nil {
+	//return 0, err
+	//}
 
 	if data, err = os.Create(PATH); err != nil {
-		return -2, err
+		return 0, err
 	}
+	defer func() {
+		if err := data.Close(); err != nil {
+			return
+		}
+	}()
 
 	if written, err = io.Copy(data, resp.Body); err != nil {
-		return -3, err
+		return 0, err
 	}
-
-	if err := resp.Body.Close(); err != nil {
-		return -4, err
-	}
-
-	if err := data.Close(); err != nil {
-		return -5, err
-	}
-
 	return written, nil
 }
 
@@ -155,51 +152,6 @@ func Exists(path string) bool {
 		return false
 	}
 	return true
-}
-
-func Unzip(archive, target string) error {
-	var reader *zip.ReadCloser
-	var fileReader io.ReadCloser
-	if reader, err = zip.OpenReader(archive); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(target, 0755); err != nil {
-		return err
-	}
-
-	for _, file := range reader.File {
-		path := filepath.Join(target, file.Name)
-		if file.FileInfo().IsDir() {
-			if err := os.MkdirAll(path, file.Mode()); err != nil {
-				return err
-			}
-			continue
-		}
-
-		if fileReader, err = file.Open(); err != nil {
-			return err
-		}
-
-		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
-		if err != nil {
-			return err
-		}
-
-		if _, err := io.Copy(targetFile, fileReader); err != nil {
-			return err
-		}
-
-		if err := targetFile.Close(); err != nil {
-			return err
-		}
-
-		if err := fileReader.Close(); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func Unpack(archive, target string) (err error) {

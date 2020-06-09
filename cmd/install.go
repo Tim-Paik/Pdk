@@ -35,7 +35,10 @@ var installCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		pkg.Install(args, repoName)
+		if err := pkg.Install(args, repoName); err != nil {
+			fmt.Println(err)
+			return
+		}
 	},
 }
 
