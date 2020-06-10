@@ -20,6 +20,7 @@ func Install(packages []string, repoName string) (err error) {
 		return fmt.Errorf("Error: no targets specified\n")
 	}
 	if repo, err = Read(RepoRoot + "/" + repoName + ".json"); err != nil {
+		fmt.Println("Warning: Repo.json was not found, please use 'pdk update <URL>' to install repo")
 		return err
 	}
 	if err := CheckArch(&repo); err != nil {
@@ -29,8 +30,8 @@ func Install(packages []string, repoName string) (err error) {
 		return err
 	}
 	for _, i := range index {
-		PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version
-		if !Exists(PATH) {
+		PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version + ".pdkg"
+		if !IsExists(PATH) {
 			fmt.Println("Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
 				return err
@@ -58,21 +59,25 @@ func Install(packages []string, repoName string) (err error) {
 			}
 		}
 		fmt.Println("Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
-		if err := Unpack(PATH, AppRoot); err != nil {
+		if err := UnpackAndCallback(PATH, repo.Pkgs[i].Name); err != nil {
 			return err
 		}
-		//CALLBACK_SCRIPT
-		switch runtime.GOOS {
-		case "windows":
-			var outInfo bytes.Buffer
-			cmd := exec.Command(AppRoot + "/" + repo.Pkgs[i].Name + "/install")
-			cmd.Stdout = &outInfo
-			if err := cmd.Run(); err != nil {
-				break
-			} else {
-				fmt.Println(outInfo.String())
+		/*
+			if err := Unpack(PATH, AppRoot); err != nil {
+				return err
 			}
-		}
+			//CALLBACK_SCRIPT
+			switch runtime.GOOS {
+			case "windows":
+				var outInfo bytes.Buffer
+				cmd := exec.Command(AppRoot + "/apps/appData/" + repo.Pkgs[i].Name + "/install")
+				cmd.Stdout = &outInfo
+				if err := cmd.Run(); err != nil {
+					break
+				} else {
+					fmt.Println(outInfo.String())
+				}
+			}*/
 	}
 	return nil
 }
@@ -143,7 +148,7 @@ func Md5Sum(filePath string) (MD5string string, err error) {
 	return MD5string, nil
 }
 
-func Exists(path string) bool {
+func IsExists(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsExist(err) {
@@ -172,6 +177,25 @@ func CheckArch(repo *Repositories) (err error) {
 	if _, err := fmt.Printf("Warn: You are using %s instead of %s in %s", repo.OS+"/"+repo.Arch, runtime.GOOS+"/"+
 		runtime.GOARCH, repo.Name); err != nil {
 		return err
+	}
+	return nil
+}
+
+func UnpackAndCallback(PATH string, packageName string) (err error) {
+	if err := Unpack(PATH, AppRoot); err != nil {
+		return err
+	}
+	//CALLBACK_SCRIPT
+	switch runtime.GOOS {
+	case "windows":
+		var outInfo bytes.Buffer
+		cmd := exec.Command(AppData + "/" + packageName + "/install")
+		cmd.Stdout = &outInfo
+		if err := cmd.Run(); err != nil {
+			break
+		} else {
+			fmt.Println(outInfo.String())
+		}
 	}
 	return nil
 }

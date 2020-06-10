@@ -11,14 +11,12 @@ import (
 func Read(path string) (repo Repositories, err error) {
 	var repoJson []byte
 
-	repoJson, err = ioutil.ReadFile(path)
-	if err != nil {
-		return repo, err
+	if repoJson, err = ioutil.ReadFile(path); err != nil {
+		return Repositories{}, err
 	}
 
-	err = json.Unmarshal(repoJson, &repo)
-	if err != nil {
-		return repo, err
+	if err := json.Unmarshal(repoJson, &repo); err != nil {
+		return Repositories{}, err
 	}
 
 	return repo, err

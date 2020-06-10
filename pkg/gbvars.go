@@ -25,13 +25,23 @@ type Pkg struct {
 	URL         string `json:"URL"`
 }
 
+type Pdkg struct {
+	Name        string   `json:"name"`
+	Version     string   `json:"version"`
+	Description string   `json:"description"`
+	Update      int64    `json:"update"`
+	Files       []string `json:"files"`
+}
+
 var (
-	Root              = root()
-	RepoRoot          = repoRoot()
-	PackageRoot       = packageRoot()
-	AppRoot           = appRoot()
-	AppPath           = appPath()
+	Root        = root()
+	RepoRoot    = repoRoot()
+	PackageRoot = packageRoot()
+	AppRoot     = appRoot()
+	//AppPath           = appPath()
+	AppData           = appData()
 	DefaultRepo       = "repo"
+	PdkgJson          = "pdkg.json"
 	err         error = nil
 )
 
@@ -63,25 +73,33 @@ func packageRoot() (repoRoot string) {
 func appRoot() (repoRoot string) {
 	switch runtime.GOOS {
 	case "windows":
-		if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
-			panic(err)
-		}
-		repoRoot = Root + "/apps"
+		//if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
+		//panic(err)
+		//}
+		repoRoot = Root //+ "/apps"
 	default:
 		repoRoot = "/"
 	}
 	return repoRoot
 }
 
+/*
 func appPath() (appPath string) {
 	switch runtime.GOOS {
 	case "windows":
-		if err := os.MkdirAll(AppRoot+"/bin", 0755); err != nil {
+		if err := os.MkdirAll(AppRoot+"/apps/bin", 0755); err != nil {
 			panic(err)
 		}
-		appPath = AppRoot + "/bin"
+		appPath = AppRoot + "/apps/bin"
 	default:
 		appPath = "/usr/bin"
 	}
 	return appPath
+}
+*/
+func appData() (appData string) {
+	if err := os.MkdirAll(AppRoot+"/apps/appData", 0755); err != nil {
+		panic(err)
+	}
+	return AppRoot + "/apps/appData"
 }

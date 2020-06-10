@@ -177,8 +177,7 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 // reading the entire zip file in memory.
 func Unzip(r io.Reader, destPath string) (string, error) {
 	var (
-		zr  *zip.Reader
-		err error
+		zr *zip.Reader
 	)
 
 	if f, ok := r.(*os.File); ok {
@@ -194,10 +193,6 @@ func Unzip(r io.Reader, destPath string) (string, error) {
 		}
 		memReader := bytes.NewReader(data)
 		zr, err = zip.NewReader(memReader, memReader.Size())
-	}
-
-	if err != nil {
-		return "", err
 	}
 
 	return unpackZip(zr, destPath)

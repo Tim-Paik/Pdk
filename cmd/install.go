@@ -18,7 +18,10 @@ package cmd
 
 import (
 	"fmt"
+	"path"
+	"path/filepath"
 	"pdk/pkg"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +33,29 @@ var installCmd = &cobra.Command{
 	Long:    `Download and install the latest package from your local repository (default)`,
 	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {
+		var isLocal bool
 		var repoName string
+		if isLocal, err = cmd.Flags().GetBool("local"); err != nil {
+			fmt.Println(err)
+			return
+		} else if isLocal {
+			if len(args) == 0 {
+				fmt.Println("Error: no targets specified")
+			}
+			for _, PATH := range args {
+				fmt.Println("Installing from " + PATH)
+				packageName := strings.FieldsFunc(strings.TrimSuffix(filepath.Base(PATH), path.Ext(PATH)), func(r rune) bool {
+					if r == '-' {
+						return true
+					}
+					return false
+				})
+				if err := pkg.UnpackAndCallback(PATH, packageName[0]); err != nil {
+					return
+				}
+			}
+			return
+		}
 		if repoName, err = cmd.Flags().GetString("repoName"); err != nil {
 			fmt.Println(err)
 			return
@@ -51,6 +76,7 @@ func init() {
 	// and all subcommands, e.g.:
 	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
 	installCmd.PersistentFlags().String("repoName", pkg.DefaultRepo, "Install from specified repo (repo by default)")
+	installCmd.Flags().Bool("local", false, "Unzip the installation from the local (default is false)")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
