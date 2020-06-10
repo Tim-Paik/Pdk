@@ -8,7 +8,7 @@ import (
 func PrintPath(path string, indent string) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		fmt.Println("read file path error", err)
+		fmt.Println("Error: Read file path error\n", err)
 		return
 	}
 
@@ -18,12 +18,6 @@ func PrintPath(path string, indent string) {
 		}
 	}
 	dirs := make([]string, 0)
-
-	for _, fi := range files {
-		if !fi.IsDir() {
-			dirs = append(dirs, fi.Name())
-		}
-	}
 
 	lenFile := len(dirs)
 
@@ -45,6 +39,5 @@ func PrintPath(path string, indent string) {
 				PrintPath(path+"\\"+dirs[i], indent+"│  ")
 			}
 		}
-
 	}
 }

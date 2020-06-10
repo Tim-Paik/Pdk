@@ -17,6 +17,8 @@ func Pack() (err error) {
 	var (
 		pdkgJson []byte
 		pdkg     Pdkg
+		pkgJson  []byte
+		pkg      Pkg
 	)
 
 	if pdkgJson, err = ioutil.ReadFile(PdkgJson); err != nil {
@@ -50,6 +52,23 @@ func Pack() (err error) {
 	}
 
 	if err := Tar("apps/", "packages/"+pdkg.Name+"-"+pdkg.Version+".pdkg"); err != nil {
+		return err
+	}
+
+	pkg.Name = pdkg.Name
+	pkg.Version = pdkg.Version
+	pkg.Description = pdkg.Description
+	pkg.Update = pdkg.Update
+	if pkg.Md5, err = Md5Sum("packages/" + pdkg.Name + "-" + pdkg.Version + ".pdkg"); err != nil {
+		return err
+	}
+	pkg.URL = ""
+
+	if pkgJson, err = json.Marshal(pkg); err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile("packages/"+pkg.Name+".json", pkgJson, 0644); err != nil {
 		return err
 	}
 

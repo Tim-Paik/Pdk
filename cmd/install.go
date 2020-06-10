@@ -29,7 +29,7 @@ import (
 // installCmd represents the install command
 var installCmd = &cobra.Command{
 	Use:     "install <package(s)>",
-	Short:   "Install packages",
+	Short:   "Install package(s)",
 	Long:    `Download and install the latest package from your local repository (default)`,
 	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {

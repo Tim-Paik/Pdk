@@ -14,8 +14,10 @@ import (
 )
 
 func Install(packages []string, repoName string) (err error) {
-	var repo Repositories
-	var index []int
+	var (
+		repo  Repositories
+		index []int
+	)
 	if len(packages) == 0 {
 		return fmt.Errorf("Error: no targets specified\n")
 	}
@@ -39,15 +41,14 @@ func Install(packages []string, repoName string) (err error) {
 		} else {
 			fmt.Println("Find the local package: " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		}
-		if MD5, err := Md5Sum(PATH); err != nil {
+		var MD5 string
+		if MD5, err = Md5Sum(PATH); err != nil {
 			return err
-		} else if MD5 != repo.Pkgs[i].Md5 {
+		}
+		if MD5 != repo.Pkgs[i].Md5 {
 			fmt.Println("Error: Md5 error")
 			fmt.Println("Want: " + repo.Pkgs[i].Md5)
 			fmt.Println("Get: " + MD5)
-			if err := os.RemoveAll(PATH); err != nil {
-				return err
-			}
 			fmt.Println("Re-downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
 				return err
@@ -62,22 +63,6 @@ func Install(packages []string, repoName string) (err error) {
 		if err := UnpackAndCallback(PATH, repo.Pkgs[i].Name); err != nil {
 			return err
 		}
-		/*
-			if err := Unpack(PATH, AppRoot); err != nil {
-				return err
-			}
-			//CALLBACK_SCRIPT
-			switch runtime.GOOS {
-			case "windows":
-				var outInfo bytes.Buffer
-				cmd := exec.Command(AppRoot + "/apps/appData/" + repo.Pkgs[i].Name + "/install")
-				cmd.Stdout = &outInfo
-				if err := cmd.Run(); err != nil {
-					break
-				} else {
-					fmt.Println(outInfo.String())
-				}
-			}*/
 	}
 	return nil
 }
