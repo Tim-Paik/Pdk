@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 )
 
 func Remove(packages []string) (err error) {
@@ -22,9 +21,7 @@ func Remove(packages []string) (err error) {
 			return err
 		}
 		for _, file := range pdkg.Files {
-			if PATH, err := filepath.Abs(file); err != nil {
-				return err
-			} else if err := os.Remove(PATH); err != nil {
+			if err := os.Remove(AppRoot + "/" + file); err != nil {
 				return err
 			}
 		}

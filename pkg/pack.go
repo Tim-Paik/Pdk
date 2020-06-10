@@ -51,6 +51,10 @@ func Pack() (err error) {
 		return err
 	}
 
+	if err := os.MkdirAll("packages/", 0755); err != nil {
+		return err
+	}
+
 	if err := Tar("apps/", "packages/"+pdkg.Name+"-"+pdkg.Version+".pdkg"); err != nil {
 		return err
 	}
