@@ -86,7 +86,7 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 	}
 
 	// Makes sure destPath exists
-	if err := os.MkdirAll(destPath, 0740); err != nil {
+	if err := os.MkdirAll(destPath, 0755); err != nil {
 		return "", err
 	}
 
@@ -234,7 +234,7 @@ func unzipFile(f *zip.File, destPath string) error {
 	fileDir := filepath.Dir(destPath)
 	_, err = os.Lstat(fileDir)
 	if err != nil {
-		if err := os.MkdirAll(fileDir, 0700); err != nil {
+		if err := os.MkdirAll(fileDir, 0755); err != nil {
 			return err
 		}
 	}
@@ -272,14 +272,14 @@ func unzipFile(f *zip.File, destPath string) error {
 // Untar unarchives a TAR archive and returns the final destination path or an error
 func Untar(data io.Reader, destPath string) (string, error) {
 	// Makes sure destPath exists
-	if err := os.MkdirAll(destPath, 0740); err != nil {
+	if err := os.MkdirAll(destPath, 0755); err != nil {
 		return "", err
 	}
 
 	tr := tar.NewReader(data)
 
 	// Iterate through the files in the archive.
-	rootdir := destPath
+	rootDir := destPath
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {
@@ -288,7 +288,7 @@ func Untar(data io.Reader, destPath string) (string, error) {
 		}
 
 		if err != nil {
-			return rootdir, err
+			return rootDir, err
 		}
 
 		// Skip pax_global_header with the commit ID this archive was created from
@@ -298,23 +298,23 @@ func Untar(data io.Reader, destPath string) (string, error) {
 
 		fp := filepath.Join(destPath, sanitize(hdr.Name))
 		if hdr.FileInfo().IsDir() {
-			if rootdir == destPath {
-				rootdir = fp
+			if rootDir == destPath {
+				rootDir = fp
 			}
 
 			if err := os.MkdirAll(fp, os.FileMode(hdr.Mode)); err != nil {
-				return rootdir, err
+				return rootDir, err
 			}
 			continue
 		}
 
-		_, untarErr := untarFile(hdr, tr, fp, rootdir)
-		if untarErr != nil {
-			return rootdir, untarErr
+		_, unTarErr := untarFile(hdr, tr, fp, rootDir)
+		if unTarErr != nil {
+			return rootDir, unTarErr
 		}
 	}
 
-	return rootdir, nil
+	return rootDir, nil
 }
 
 func untarFile(hdr *tar.Header, tr *tar.Reader, fp, rootdir string) (string, error) {

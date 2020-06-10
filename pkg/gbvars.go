@@ -98,8 +98,14 @@ func appPath() (appPath string) {
 }
 */
 func appData() (appData string) {
-	if err := os.MkdirAll(AppRoot+"/apps/appData", 0755); err != nil {
-		panic(err)
+	switch runtime.GOOS {
+	case "windows":
+		if err := os.MkdirAll(AppRoot+"/apps/appData", 0755); err != nil {
+			panic(err)
+		}
+		appData = AppRoot + "/apps/appData"
+	default:
+		appData = Root + "/apps/appData"
 	}
-	return AppRoot + "/apps/appData"
+	return appData
 }

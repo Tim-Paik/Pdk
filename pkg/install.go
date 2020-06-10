@@ -174,7 +174,7 @@ func CheckArch(repo *Repositories) (err error) {
 	if repo.Arch == runtime.GOARCH && repo.OS == runtime.GOOS {
 		return nil
 	}
-	if _, err := fmt.Printf("Warn: You are using %s instead of %s in %s", repo.OS+"/"+repo.Arch, runtime.GOOS+"/"+
+	if _, err := fmt.Printf("Warn: You are using %s instead of %s in %s\n", repo.OS+"/"+repo.Arch, runtime.GOOS+"/"+
 		runtime.GOARCH, repo.Name); err != nil {
 		return err
 	}
