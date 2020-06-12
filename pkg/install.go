@@ -5,11 +5,11 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/mholt/archiver/v3"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
-	"pdk/pkg/unpackit"
 	"runtime"
 )
 
@@ -144,17 +144,6 @@ func IsExists(path string) bool {
 	return true
 }
 
-func Unpack(archive, target string) (err error) {
-	var file *os.File
-	if file, err = os.Open(archive); err != nil {
-		return err
-	}
-	if _, err := unpackit.Unpack(file, target); err != nil {
-		return err
-	}
-	return nil
-}
-
 func CheckArch(repo *Repositories) (err error) {
 	if repo.Arch == runtime.GOARCH && repo.OS == runtime.GOOS {
 		return nil
@@ -167,7 +156,7 @@ func CheckArch(repo *Repositories) (err error) {
 }
 
 func UnpackAndCallback(PATH string, packageName string) (err error) {
-	if err := Unpack(PATH, AppRoot); err != nil {
+	if err := archiver.Unarchive(PATH, AppRoot); err != nil {
 		return err
 	}
 	//CALLBACK_SCRIPT

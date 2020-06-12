@@ -2,13 +2,15 @@ package pkg
 
 import (
 	"archive/tar"
+	"bytes"
 	"encoding/json"
 	"fmt"
-	gzip "github.com/klauspost/pgzip"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -31,10 +33,10 @@ func Pack() (err error) {
 
 	fmt.Printf("Packing %s version %s\n", pdkg.Name, pdkg.Version)
 
-	fmt.Println("Files to delete when uninstalling:")
+	fmt.Println("==> Files to delete when uninstalling:")
 
 	for _, file := range pdkg.Files {
-		fmt.Println(file)
+		fmt.Println(" --> " + file)
 	}
 
 	pdkg.Update = time.Now().Unix()
@@ -55,15 +57,36 @@ func Pack() (err error) {
 		return err
 	}
 
-	if err := Tar("apps/", "packages/"+pdkg.Name+"-"+pdkg.Version+".pdkg"); err != nil {
+	tarName := "packages/" + pdkg.Name + "-" + pdkg.Version + ".tar"
+
+	fmt.Println("==> Packing...")
+
+	if err := Tar("apps/", tarName); err != nil {
 		return err
 	}
 
+	if err := os.RemoveAll(tarName + ".zst"); err != nil {
+		return err
+	}
+	var outInfo bytes.Buffer
+	cmd := exec.Command("zstd", tarName)
+	cmd.Stdout = &outInfo
+	fmt.Println("==> Compress package...")
+	if err := cmd.Run(); err != nil {
+		fmt.Println("Error: Please install ZSTD to package the software")
+		fmt.Println("Run: pdk install zstd")
+		return err
+	}
+	if err := os.RemoveAll(tarName); err != nil {
+		return err
+	}
+
+	fmt.Println("==> Format JSON...")
 	pkg.Name = pdkg.Name
 	pkg.Version = pdkg.Version
 	pkg.Description = pdkg.Description
 	pkg.Update = pdkg.Update
-	if pkg.Md5, err = Md5Sum("packages/" + pdkg.Name + "-" + pdkg.Version + ".pdkg"); err != nil {
+	if pkg.Md5, err = Md5Sum(tarName + ".zst"); err != nil {
 		return err
 	}
 	pkg.URL = ""
@@ -76,13 +99,14 @@ func Pack() (err error) {
 		return err
 	}
 
+	fmt.Println("Done!")
 	return nil
 }
 
 func Tar(src, dst string) (err error) {
 	var (
 		fw *os.File
-		gw *gzip.Writer
+		//gw *gzip.Writer
 		tw *tar.Writer
 	)
 
@@ -95,14 +119,7 @@ func Tar(src, dst string) (err error) {
 		}
 	}()
 
-	gw = gzip.NewWriter(fw)
-	defer func() {
-		if err := gw.Close(); err != nil {
-			return
-		}
-	}()
-
-	tw = tar.NewWriter(gw)
+	tw = tar.NewWriter(fw)
 
 	if err := filepath.Walk(src, func(fileName string, fi os.FileInfo, err error) error {
 		if err != nil {
@@ -118,7 +135,11 @@ func Tar(src, dst string) (err error) {
 			return err
 		}
 
-		hdr.Name = strings.TrimPrefix(fileName, string(filepath.Separator))
+		hdr.Name = strings.TrimPrefix(strings.TrimPrefix(fileName, "apps"), string(filepath.Separator))
+
+		if hdr.Name == "/" {
+			return nil
+		}
 
 		if err := tw.WriteHeader(hdr); err != nil {
 			return err
@@ -128,6 +149,7 @@ func Tar(src, dst string) (err error) {
 			return nil
 		}
 
+		fmt.Println(" --> Added file: " + hdr.Name + " " + strconv.FormatInt(hdr.Size, 10))
 		if fr, err = os.Open(fileName); err != nil {
 			return err
 		}

@@ -1,14 +1,17 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Tim_Paik">
     <words>
+      <w>atoi</w>
       <w>ftype</w>
       <w>paik</w>
       <w>pdkg</w>
       <w>pkgs</w>
       <w>pkzip</w>
+      <w>strconv</w>
       <w>subcommands</w>
       <w>unarchiver</w>
       <w>unpackit</w>
+      <w>zstd</w>
     </words>
   </dictionary>
 </component>
