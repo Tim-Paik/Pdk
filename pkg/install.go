@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 )
 
@@ -28,28 +28,30 @@ func Install(packages []string, repoName string) (err error) {
 	if err := CheckArch(&repo); err != nil {
 		return err
 	}
+	fmt.Println(Indent1 + "Searching for packages")
 	if index, err = Search(&repo, packages); err != nil {
 		return err
 	}
 	for _, i := range index {
-		PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version + ".pdkg"
+		//PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version + ".tar" + path.Ext(repo.Pkgs[i].URL)
+		PATH := filepath.Base(repo.Pkgs[i].URL)
 		if !IsExists(PATH) {
-			fmt.Println("Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+			fmt.Println(Indent2 + "Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
 				return err
 			}
 		} else {
-			fmt.Println("Find the local package: " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+			fmt.Println(Indent2 + "Find the local package: " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		}
 		var MD5 string
 		if MD5, err = Md5Sum(PATH); err != nil {
 			return err
 		}
 		if MD5 != repo.Pkgs[i].Md5 {
-			fmt.Println("Error: Md5 error")
-			fmt.Println("Want: " + repo.Pkgs[i].Md5)
-			fmt.Println("Get: " + MD5)
-			fmt.Println("Re-downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+			fmt.Println(Indent2 + "Error: Md5 error")
+			fmt.Println(Indent2 + "Want: " + repo.Pkgs[i].Md5)
+			fmt.Println(Indent2 + "Get: " + MD5)
+			fmt.Println(Indent2 + "Re-downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
 				return err
 			}
@@ -59,10 +61,11 @@ func Install(packages []string, repoName string) (err error) {
 				return fmt.Errorf("Error: Serious md5 error\n")
 			}
 		}
-		fmt.Println("Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+		fmt.Println(Indent2 + "Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		if err := UnpackAndCallback(PATH, repo.Pkgs[i].Name); err != nil {
 			return err
 		}
+		fmt.Println(Indent2 + "Successful installation of " + repo.Pkgs[i].Name)
 	}
 	return nil
 }
@@ -162,14 +165,9 @@ func UnpackAndCallback(PATH string, packageName string) (err error) {
 	//CALLBACK_SCRIPT
 	switch runtime.GOOS {
 	case "windows":
-		var outInfo bytes.Buffer
 		cmd := exec.Command(AppData + "/" + packageName + "/install")
-		cmd.Stdout = &outInfo
-		if err := cmd.Run(); err != nil {
-			break
-		} else {
-			fmt.Println(outInfo.String())
-		}
+		out, _ := cmd.CombinedOutput()
+		fmt.Println(string(out))
 	}
 	return nil
 }

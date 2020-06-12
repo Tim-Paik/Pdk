@@ -42,6 +42,8 @@ var (
 	AppData           = appData()
 	DefaultRepo       = "repo"
 	PdkgJson          = "pdkg.json"
+	Indent1           = "==> "
+	Indent2           = "  -> "
 	err         error = nil
 )
 
@@ -73,37 +75,23 @@ func packageRoot() (repoRoot string) {
 func appRoot() (repoRoot string) {
 	switch runtime.GOOS {
 	case "windows":
-		//if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
-		//panic(err)
-		//}
-		repoRoot = Root //+ "/apps"
+		if err := os.MkdirAll(Root+"/apps", 0755); err != nil {
+			panic(err)
+		}
+		repoRoot = Root + "/apps"
 	default:
 		repoRoot = "/"
 	}
 	return repoRoot
 }
 
-/*
-func appPath() (appPath string) {
-	switch runtime.GOOS {
-	case "windows":
-		if err := os.MkdirAll(AppRoot+"/apps/bin", 0755); err != nil {
-			panic(err)
-		}
-		appPath = AppRoot + "/apps/bin"
-	default:
-		appPath = "/usr/bin"
-	}
-	return appPath
-}
-*/
 func appData() (appData string) {
 	switch runtime.GOOS {
 	case "windows":
-		if err := os.MkdirAll(AppRoot+"/apps/appData", 0755); err != nil {
+		if err := os.MkdirAll(Root+"/apps/appData", 0755); err != nil {
 			panic(err)
 		}
-		appData = AppRoot + "/apps/appData"
+		appData = Root + "/apps/appData"
 	default:
 		appData = Root + "/apps/appData"
 	}

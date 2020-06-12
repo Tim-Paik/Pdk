@@ -3,13 +3,13 @@ package tree
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
-func PrintPath(path string, indent string) {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		fmt.Println("Error: Read file path error\n", err)
-		return
+func PrintPath(path string, indent string) (err error) {
+	var files []os.FileInfo
+	if files, err = ioutil.ReadDir(path); err != nil {
+		return fmt.Errorf("Error: Read file path error\n")
 	}
 
 	for i := 0; i < len(files); i++ {
@@ -31,13 +31,18 @@ func PrintPath(path string, indent string) {
 		if i == len(dirs)-1 {
 			fmt.Println(indent + "└── " + dirs[i])
 			if i >= lenFile {
-				PrintPath(path+"\\"+dirs[i], indent+"   ")
+				if err := PrintPath(path+"\\"+dirs[i], indent+"   "); err != nil {
+					return err
+				}
 			}
 		} else {
 			fmt.Println(indent + "├── " + dirs[i])
 			if i >= lenFile {
-				PrintPath(path+"\\"+dirs[i], indent+"│  ")
+				if err := PrintPath(path+"\\"+dirs[i], indent+"│  "); err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }

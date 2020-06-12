@@ -33,10 +33,10 @@ func Pack() (err error) {
 
 	fmt.Printf("Packing %s version %s\n", pdkg.Name, pdkg.Version)
 
-	fmt.Println("==> Files to delete when uninstalling:")
+	fmt.Println(Indent1 + "Files to delete when uninstalling:")
 
 	for _, file := range pdkg.Files {
-		fmt.Println(" --> " + file)
+		fmt.Println(Indent2 + file)
 	}
 
 	pdkg.Update = time.Now().Unix()
@@ -58,8 +58,11 @@ func Pack() (err error) {
 	}
 
 	tarName := "packages/" + pdkg.Name + "-" + pdkg.Version + ".tar"
+	if tarName, err = filepath.Abs(tarName); err != nil {
+		return err
+	}
 
-	fmt.Println("==> Packing...")
+	fmt.Println(Indent1 + "Packing...")
 
 	if err := Tar("apps/", tarName); err != nil {
 		return err
@@ -71,7 +74,7 @@ func Pack() (err error) {
 	var outInfo bytes.Buffer
 	cmd := exec.Command("zstd", tarName)
 	cmd.Stdout = &outInfo
-	fmt.Println("==> Compress package...")
+	fmt.Println(Indent1 + "Compress package...")
 	if err := cmd.Run(); err != nil {
 		fmt.Println("Error: Please install ZSTD to package the software")
 		fmt.Println("Run: pdk install zstd")
@@ -81,7 +84,7 @@ func Pack() (err error) {
 		return err
 	}
 
-	fmt.Println("==> Format JSON...")
+	fmt.Println(Indent1 + "Format JSON...")
 	pkg.Name = pdkg.Name
 	pkg.Version = pdkg.Version
 	pkg.Description = pdkg.Description
@@ -106,7 +109,6 @@ func Pack() (err error) {
 func Tar(src, dst string) (err error) {
 	var (
 		fw *os.File
-		//gw *gzip.Writer
 		tw *tar.Writer
 	)
 
@@ -149,7 +151,7 @@ func Tar(src, dst string) (err error) {
 			return nil
 		}
 
-		fmt.Println(" --> Added file: " + hdr.Name + " " + strconv.FormatInt(hdr.Size, 10))
+		fmt.Println(Indent2 + "Added file: " + hdr.Name + " " + strconv.FormatInt(hdr.Size, 10))
 		if fr, err = os.Open(fileName); err != nil {
 			return err
 		}

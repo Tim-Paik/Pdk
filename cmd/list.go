@@ -25,12 +25,16 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "Lists the currently installed packages",
-	Long:  `Lists the currently installed packages`,
+	Use:     "list",
+	Short:   "Lists the currently installed packages",
+	Long:    `Lists the currently installed packages`,
+	Aliases: []string{"l"},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Packages:")
-		tree.PrintPath(pkg.AppData, "")
+		if err := tree.PrintPath(pkg.AppData, ""); err != nil {
+			fmt.Println(err)
+			return
+		}
 	},
 }
 
