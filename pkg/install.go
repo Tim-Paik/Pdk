@@ -14,7 +14,7 @@ import (
 	"strconv"
 )
 
-func Install(packages []string, repoName string) (err error) {
+func Install(packages []string, repoName string, isAutoYes bool) (err error) {
 	var (
 		repo    Repositories
 		index   []int
@@ -47,20 +47,22 @@ func Install(packages []string, repoName string) (err error) {
 			fmt.Print(" ")
 		}
 	}
-	fmt.Print("\n" + Indent1 + "Proceed with installation? [Y/n]")
-	if _, err := fmt.Scanln(&yesOrNo); err != nil {
-		return err
-	}
-	if !(yesOrNo == "Y" || yesOrNo == "y") {
-		fmt.Println("The action is canceled by the user.")
-		return nil
+	if !isAutoYes {
+		fmt.Print("\n" + Indent1 + "Proceed with installation? [Y/n]")
+		if _, err := fmt.Scanln(&yesOrNo); err != nil {
+			return err
+		}
+		if !(yesOrNo == "Y" || yesOrNo == "y") {
+			fmt.Println("The action is canceled by the user.")
+			return nil
+		}
 	}
 	for _, i := range index {
 		//PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version + ".tar" + path.Ext(repo.Pkgs[i].URL)
 		PATH := PackageRoot + "/" + filepath.Base(repo.Pkgs[i].URL)
 		if !IsExists(PATH) {
 			fmt.Println(Indent2 + "Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
-			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
+			if _, err := Download(repo.Base+"/"+repo.Pkgs[i].URL, PATH); err != nil {
 				return err
 			}
 		} else {
@@ -75,7 +77,7 @@ func Install(packages []string, repoName string) (err error) {
 			fmt.Println(Indent2 + "Want: " + repo.Pkgs[i].Md5)
 			fmt.Println(Indent2 + "Get: " + MD5)
 			fmt.Println(Indent2 + "Re-downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
-			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
+			if _, err := Download(repo.Base+"/"+repo.Pkgs[i].URL, PATH); err != nil {
 				return err
 			}
 			if MD5, err := Md5Sum(PATH); err != nil {

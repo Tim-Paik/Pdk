@@ -33,8 +33,14 @@ var installCmd = &cobra.Command{
 	Long:    `Download and install the latest package from your local repository (default)`,
 	Aliases: []string{"i"},
 	Run: func(cmd *cobra.Command, args []string) {
+		pkg.CheckRoot()
 		var isLocal bool
+		var isAutoYes bool
 		var repoName string
+		if isAutoYes, err = cmd.Flags().GetBool("local"); err != nil {
+			fmt.Println(err)
+			return
+		}
 		if isLocal, err = cmd.Flags().GetBool("local"); err != nil {
 			fmt.Println(err)
 			return
@@ -62,7 +68,7 @@ var installCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		if err := pkg.Install(args, repoName); err != nil {
+		if err := pkg.Install(args, repoName, isAutoYes); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -79,6 +85,7 @@ func init() {
 	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
 	installCmd.PersistentFlags().String("repoName", pkg.DefaultRepo, "Install from specified repo (repo by default)")
 	installCmd.Flags().Bool("local", false, "Unzip the installation from the local (default is false)")
+	installCmd.Flags().Bool("y", false, "Automatic yes to prompts (default is false)")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

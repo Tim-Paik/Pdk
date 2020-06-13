@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="pdk" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="Pdk" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i" />
+    <kind value="DIRECTORY" />
+    <filePath value="$PROJECT_DIR$/" />
+    <package value="pdk" />
+    <directory value="$PROJECT_DIR$/" />
+    <output_directory value="$PROJECT_DIR$/build" />
+    <option name="run" value="false" />
+    <method v="2" />
+  </configuration>
+</component>

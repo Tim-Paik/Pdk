@@ -92,7 +92,7 @@ func Pack() (err error) {
 	if pkg.Md5, err = Md5Sum(tarName + ".zst"); err != nil {
 		return err
 	}
-	pkg.URL = ""
+	pkg.URL = filepath.Base(tarName + ".zst")
 
 	if pkgJson, err = json.Marshal(pkg); err != nil {
 		return err

@@ -31,6 +31,7 @@ var cleanCmd = &cobra.Command{
 	Long:    `Clear all local cache packages`,
 	Aliases: []string{"c"},
 	Run: func(cmd *cobra.Command, args []string) {
+		pkg.CheckRoot()
 		if err := os.RemoveAll(pkg.PackageRoot); err != nil {
 			fmt.Println(err)
 			return

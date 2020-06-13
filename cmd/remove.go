@@ -30,6 +30,7 @@ var removeCmd = &cobra.Command{
 	Long:    `Remove package(s) from local data`,
 	Aliases: []string{"r"},
 	Run: func(cmd *cobra.Command, args []string) {
+		pkg.CheckRoot()
 		if err := pkg.Remove(args); err != nil {
 			fmt.Println(err)
 			return

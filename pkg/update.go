@@ -28,7 +28,7 @@ func UpdateLocal(repoName string) (err error) {
 		fmt.Println(repoName + ".json was not found!")
 		return err
 	}
-	if err := Update(repo.URL, repoName); err != nil {
+	if err := Update(repo.Base+"/"+repo.URL, repoName); err != nil {
 		return err
 	}
 	return nil

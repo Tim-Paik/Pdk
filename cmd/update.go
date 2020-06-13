@@ -30,13 +30,12 @@ var updateCmd = &cobra.Command{
 	Long:    `Download and update the repo from the URL.`,
 	Aliases: []string{"u"},
 	Run: func(cmd *cobra.Command, args []string) {
+		pkg.CheckRoot()
 		var repoName string
-
 		if repoName, err = cmd.Flags().GetString("repoName"); err != nil {
 			fmt.Println(err)
 			return
 		}
-
 		if len(args) == 0 {
 			if err := pkg.UpdateLocal(repoName); err != nil {
 				fmt.Println(err)

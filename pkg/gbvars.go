@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,6 +13,7 @@ type Repositories struct {
 	Update  int64  `json:"update"`
 	OS      string `json:"os"`
 	Arch    string `json:"arch"`
+	Base    string `json:"base"`
 	URL     string `json:"URL"`
 	Pkgs    []Pkg  `json:"pkgs"`
 }
@@ -86,14 +88,17 @@ func appRoot() (repoRoot string) {
 }
 
 func appData() (appData string) {
-	switch runtime.GOOS {
-	case "windows":
-		if err := os.MkdirAll(Root+"/apps/appData", 0755); err != nil {
-			panic(err)
-		}
-		appData = Root + "/apps/appData"
-	default:
-		appData = Root + "/apps/appData"
+	if err := os.MkdirAll(Root+"/apps/appData", 0755); err != nil {
+		panic(err)
 	}
+	appData = Root + "/apps/appData"
+	appData = Root + "/apps/appData"
 	return appData
+}
+
+func CheckRoot() {
+	if runtime.GOOS != "windows" && os.Getuid() != 0 {
+		fmt.Println("Error: you cannot perform this operation unless you are root.")
+		os.Exit(1)
+	}
 }
