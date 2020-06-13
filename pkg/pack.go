@@ -57,7 +57,7 @@ func Pack() (err error) {
 		return err
 	}
 
-	tarName := "packages/" + pdkg.Name + "-" + pdkg.Version + ".tar"
+	tarName := "packages/" + pdkg.Name + "-" + pdkg.Version + ".pdkg.tar"
 	if tarName, err = filepath.Abs(tarName); err != nil {
 		return err
 	}

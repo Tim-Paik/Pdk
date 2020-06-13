@@ -43,16 +43,18 @@ var installCmd = &cobra.Command{
 				fmt.Println("Error: no targets specified")
 			}
 			for _, PATH := range args {
-				fmt.Println("Installing from " + PATH)
+				fmt.Println(pkg.Indent1 + "Installing from " + PATH)
 				packageName := strings.FieldsFunc(strings.TrimSuffix(filepath.Base(PATH), path.Ext(PATH)), func(r rune) bool {
 					if r == '-' {
 						return true
 					}
 					return false
 				})
+				fmt.Println(pkg.Indent2 + "Unpacking...")
 				if err := pkg.UnpackAndCallback(PATH, packageName[0]); err != nil {
 					return
 				}
+				fmt.Println(pkg.Indent2 + "Done!")
 			}
 			return
 		}

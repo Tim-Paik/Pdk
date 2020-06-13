@@ -24,13 +24,15 @@ func Remove(packages []string) (err error) {
 		if err = json.Unmarshal(pdkgJson, &pdkg); err != nil {
 			return err
 		}
-		fmt.Println(Indent1 + "Remove " + pdkg.Name + " v" + pdkg.Version)
+		fmt.Println(Indent1 + "Removing " + pdkg.Name + " v" + pdkg.Version)
 		//CALLBACK_SCRIPT
 		switch runtime.GOOS {
 		case "windows":
 			cmd := exec.Command(AppData + "/" + packageName + "/uninstall")
 			out, _ := cmd.CombinedOutput()
-			fmt.Println(string(out))
+			if len(out) != 0 {
+				fmt.Println(string(out))
+			}
 		}
 		for _, file := range pdkg.Files {
 			if err := os.Remove(AppRoot + "/" + file); err != nil {

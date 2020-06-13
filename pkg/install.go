@@ -11,12 +11,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 )
 
 func Install(packages []string, repoName string) (err error) {
 	var (
-		repo  Repositories
-		index []int
+		repo    Repositories
+		index   []int
+		yesOrNo string
 	)
 	if len(packages) == 0 {
 		return fmt.Errorf("Error: no targets specified\n")
@@ -28,13 +30,34 @@ func Install(packages []string, repoName string) (err error) {
 	if err := CheckArch(&repo); err != nil {
 		return err
 	}
-	fmt.Println(Indent1 + "Searching for packages")
+	fmt.Println(Indent1 + "Searching for packages...")
 	if index, err = Search(&repo, packages); err != nil {
 		return err
 	}
+	fmt.Println(Indent1 + "Resolving dependencies...")
+	if index, err = RemoveDuplicatePackages(index); err != nil {
+		return err
+	}
+	fmt.Print("\nPackages (" + strconv.Itoa(len(index)) + ") ")
+	for _, i := range index {
+		fmt.Print(repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+		if IsExists(AppData + "/" + repo.Pkgs[i].Name) {
+			fmt.Print(" (Reinstalling) ")
+		} else {
+			fmt.Print(" ")
+		}
+	}
+	fmt.Print("\n" + Indent1 + "Proceed with installation? [Y/n]")
+	if _, err := fmt.Scanln(&yesOrNo); err != nil {
+		return err
+	}
+	if !(yesOrNo == "Y" || yesOrNo == "y") {
+		fmt.Println("The action is canceled by the user.")
+		return nil
+	}
 	for _, i := range index {
 		//PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version + ".tar" + path.Ext(repo.Pkgs[i].URL)
-		PATH := filepath.Base(repo.Pkgs[i].URL)
+		PATH := PackageRoot + "/" + filepath.Base(repo.Pkgs[i].URL)
 		if !IsExists(PATH) {
 			fmt.Println(Indent2 + "Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 			if _, err := Download(repo.Pkgs[i].URL, PATH); err != nil {
@@ -84,6 +107,23 @@ func Search(repo *Repositories, packages []string) (index []int, err error) {
 		index = append(index, pkgIndex...)
 	}
 	return index, nil
+}
+
+func RemoveDuplicatePackages(index []int) (newIndex []int, err error) {
+	newIndex = make([]int, 0)
+	for i := 0; i < len(index); i++ {
+		repeat := false
+		for j := i + 1; j < len(index); j++ {
+			if index[i] == index[j] {
+				repeat = true
+				break
+			}
+		}
+		if !repeat {
+			newIndex = append(newIndex, index[i])
+		}
+	}
+	return newIndex, nil
 }
 
 func Download(URL, PATH string) (written int64, err error) {
@@ -167,7 +207,9 @@ func UnpackAndCallback(PATH string, packageName string) (err error) {
 	case "windows":
 		cmd := exec.Command(AppData + "/" + packageName + "/install")
 		out, _ := cmd.CombinedOutput()
-		fmt.Println(string(out))
+		if len(out) != 0 {
+			fmt.Println(string(out))
+		}
 	}
 	return nil
 }
