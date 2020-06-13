@@ -96,6 +96,26 @@ func appData() (appData string) {
 	return appData
 }
 
+func CheckArch(repo *Repositories) (err error) {
+	if repo.Arch == runtime.GOARCH && repo.OS == runtime.GOOS {
+		return nil
+	}
+	if _, err := fmt.Printf("Warn: You are using %s instead of %s in %s\n", repo.OS+"/"+repo.Arch, runtime.GOOS+"/"+
+		runtime.GOARCH, repo.Name); err != nil {
+		return err
+	}
+	fmt.Print("\n" + Indent1 + "Is it mandatory to continue? (This may break your system) [Y/n]")
+	var yesOrNo string
+	if _, err := fmt.Scanln(&yesOrNo); err != nil {
+		return err
+	}
+	if !(yesOrNo == "Y" || yesOrNo == "y") {
+		fmt.Println("The action is canceled by the user.")
+		return nil
+	}
+	return nil
+}
+
 func CheckRoot() {
 	if runtime.GOOS != "windows" && os.Getuid() != 0 {
 		fmt.Println("Error: you cannot perform this operation unless you are root.")
