@@ -38,6 +38,7 @@ func Install(packages []string, repoName string, isAutoYes bool) (err error) {
 	if index, err = RemoveDuplicatePackages(index); err != nil {
 		return err
 	}
+	//Print the packages to be installed
 	fmt.Print("\nPackages (" + strconv.Itoa(len(index)) + ") ")
 	for _, i := range index {
 		fmt.Print(repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
@@ -47,6 +48,7 @@ func Install(packages []string, repoName string, isAutoYes bool) (err error) {
 			fmt.Print(" ")
 		}
 	}
+	//Confirm installation
 	if !isAutoYes {
 		fmt.Print("\n" + Indent1 + "Proceed with installation? [Y/n]")
 		if _, err := fmt.Scanln(&yesOrNo); err != nil {
@@ -57,8 +59,17 @@ func Install(packages []string, repoName string, isAutoYes bool) (err error) {
 			return nil
 		}
 	}
+	//Uninstall packages that need to be reinstalled
 	for _, i := range index {
-		//PATH := PackageRoot + "/" + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version + ".tar" + path.Ext(repo.Pkgs[i].URL)
+		if IsExists(AppData + "/" + repo.Pkgs[i].Name) {
+			fmt.Println(Indent2 + "Removing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
+			if err := Remove([]string{repo.Pkgs[i].Name}); err != nil {
+				return err
+			}
+		}
+	}
+	//Download package
+	for _, i := range index {
 		PATH := PackageRoot + "/" + filepath.Base(repo.Pkgs[i].URL)
 		if !IsExists(PATH) {
 			fmt.Println(Indent2 + "Downloading " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
@@ -86,6 +97,10 @@ func Install(packages []string, repoName string, isAutoYes bool) (err error) {
 				return fmt.Errorf("Error: Serious md5 error\n")
 			}
 		}
+	}
+	//Install all packages in sequence and execute callback
+	for _, i := range index {
+		PATH := PackageRoot + "/" + filepath.Base(repo.Pkgs[i].URL)
 		fmt.Println(Indent2 + "Installing " + repo.Pkgs[i].Name + "-" + repo.Pkgs[i].Version)
 		if err := UnpackAndCallback(PATH, repo.Pkgs[i].Name); err != nil {
 			return err
@@ -190,6 +205,7 @@ func IsExists(path string) bool {
 }
 
 func UnpackAndCallback(PATH string, packageName string) (err error) {
+	//TODO: Clear all files to install or overwrite installation
 	if err := archiver.Unarchive(PATH, AppRoot); err != nil {
 		return err
 	}
